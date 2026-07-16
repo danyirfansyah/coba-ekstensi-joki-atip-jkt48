@@ -1,4 +1,6 @@
 {
+  "buildCommand": "echo 'static site, no build needed'",
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/what-are-exclusive", "destination": "/what-are-exclusive.html" },
     { "source": "/what-are-exclusive/all", "destination": "/all.html" },
