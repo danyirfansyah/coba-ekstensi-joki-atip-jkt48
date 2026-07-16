@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exclusive | JKT48 Test Website</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/index.html" class="logo">JKT<b>48</b></a>
+  <span class="user"><span class="avatar">D</span> Halo, <b>Dany Irfansyah</b></span>
+</div>
+
+<div class="container">
+  <h1 class="page-title">Beli Digital Photobook</h1>
+  <div class="breadcrumb">
+    <a href="/index.html">Home</a> &middot;
+    <a href="/what-are-exclusive">Apa Itu Eks...</a> &middot;
+    Beli Digital Photobook
+  </div>
+
+  <div class="purchase-grid">
+
+    <!-- ================= KIRI ================= -->
+    <div class="purchase-left">
+      <div class="big-thumb">JKT48<small>OFFICIAL</small></div>
+      <p id="description" style="font-size:13px;color:#555;line-height:1.8;max-width:420px;">
+        Photobook JKT48 menghadirkan rangkaian potret yang menonjolkan ekspresi natural
+        dengan karakter yang beragam, mulai dari kelembutan yang hangat, ambisi dalam
+        meraih impian, hingga energi yang hidup dan penuh semangat.
+      </p>
+
+      <!-- Riwayat pembelian: buat ngecek hasil tes ekstensi -->
+      <div class="section" style="margin-top:28px;">
+        <div class="section-head">
+          <h2>Riwayat Pembelian (hasil tes)</h2>
+          <button class="btn secondary" id="btn-clear-history" style="width:auto;padding:6px 14px;font-size:12px;">Hapus Riwayat</button>
+        </div>
+        <div id="history-list"><p style="font-size:13px;color:#999;">Belum ada pembelian.</p></div>
+      </div>
+
+      <!-- Panel simulasi buat tes case cadangan/sold out -->
+      <div class="dev-panel">
+        <h5>&#128295; PANEL TES &mdash; centang untuk bikin member jadi Sold Out (buat tes target cadangan)</h5>
+        <div id="soldout-toggles"></div>
+      </div>
+    </div>
+
+    <!-- ================= KANAN ================= -->
+    <div class="purchase-right">
+      <div class="info-card">
+        <h3 id="photobook-title">...</h3>
+        <ul>
+          <li>&#128231; <b>Konten Eksklusif.</b> Akan jadi milikmu.</li>
+          <li>&#9993;&#65039; <b>Pembelian Mudah.</b> Dapatkan secara instan dengan poin anda.</li>
+          <li>&#9200; <b>Edisi Terbatas.</b> Tersedia dalam waktu terbatas!</li>
+        </ul>
+
+        <div class="qty-row">
+          <label for="jumlah">Jumlah</label>
+          <div class="stepper">
+            <button type="button" id="jumlah-minus">&minus;</button>
+            <input type="number" id="jumlah" value="1" min="1" max="5" readonly>
+            <button type="button" class="plus" id="jumlah-plus">+</button>
+          </div>
+        </div>
+
+        <button class="btn" id="btn-beli-photobook">Beli Digital Photobook</button>
+      </div>
+
+      <!-- ============ FORM TIKET (muncul setelah klik Beli Digital Photobook) ============ -->
+      <div class="info-card" id="ticket-form" style="display:none;margin-top:20px;">
+        <h3>Pilih Jadwal &amp; Member</h3>
+
+        <div id="success-area"></div>
+
+        <div class="form-block">
+          <h4>&#128197; Pilih Tanggal</h4>
+          <div class="date-list" id="date-list"></div>
+        </div>
+
+        <div class="form-block" id="session-block" style="display:none;">
+          <h4>&#9201;&#65039; Pilih Sesi</h4>
+          <div class="session-list" id="session-list"></div>
+        </div>
+
+        <div class="form-block" id="member-block" style="display:none;">
+          <h4>&#128105; Pilih Member</h4>
+          <div class="member-list" id="member-list"></div>
+        </div>
+
+        <div class="form-block" id="ticket-block" style="display:none;">
+          <div class="qty-row">
+            <label for="ticket-qty">&#127915; Jumlah Tiket (maks. 5)</label>
+            <div class="stepper">
+              <button type="button" id="ticket-minus">&minus;</button>
+              <input type="number" id="ticket-qty" value="1" min="1" max="5" readonly>
+              <button type="button" class="plus" id="ticket-plus">+</button>
+            </div>
+          </div>
+
+          <h4 style="font-size:15px;margin-bottom:12px;">&#128179; Metode Pembayaran</h4>
+          <div class="radio-row">
+            <label><input type="radio" name="payment" value="JKT48_POINT"> JKT48 Point</label>
+            <label><input type="radio" name="payment" value="BONUS_POINT"> Bonus Point</label>
+          </div>
+
+          <button class="btn" id="btn-beli-tiket" style="margin-top:18px;" disabled>Beli Tiket</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">Copyright &copy; 2026 JKT48 Test Site (Dummy) - hanya untuk testing ekstensi</div>
+
+<script src="/data.js"></script>
+<script>
+  // ---------- info photobook dari query ?code= ----------
+  const params = new URLSearchParams(location.search);
+  const photobook = getPhotobook(params.get("code"));
+  document.getElementById("photobook-title").textContent = photobook.title;
+
+  // ---------- state ----------
+  let selectedDate = null;   // objek dari SCHEDULE
+  let selectedSession = null;
+  let selectedMember = null;
+
+  const $ = (id) => document.getElementById(id);
+
+  // ---------- stepper Jumlah (kartu atas) ----------
+  function bindStepper(inputId, minusId, plusId) {
+    const input = $(inputId);
+    $(minusId).addEventListener("click", () => {
+      input.value = Math.max(1, parseInt(input.value) - 1);
+    });
+    $(plusId).addEventListener("click", () => {
+      input.value = Math.min(MAX_TICKETS, parseInt(input.value) + 1);
+    });
+  }
+  bindStepper("jumlah", "jumlah-minus", "jumlah-plus");
+  bindStepper("ticket-qty", "ticket-minus", "ticket-plus");
+
+  // ---------- Beli Digital Photobook -> munculin form tiket ----------
+  $("btn-beli-photobook").addEventListener("click", () => {
+    $("ticket-form").style.display = "block";
+    renderDates();
+    $("ticket-form").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // ---------- render tanggal ----------
+  function renderDates() {
+    const wrap = $("date-list");
+    wrap.innerHTML = "";
+    SCHEDULE.forEach((d) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "pick-btn date-btn" + (selectedDate === d ? " selected" : "");
+      btn.dataset.date = d.date;
+      btn.innerHTML = d.label + "<small>" + d.date + "</small>";
+      btn.addEventListener("click", () => {
+        selectedDate = d;
+        selectedSession = null;
+        selectedMember = null;
+        renderDates();
+        renderSessions();
+        $("member-block").style.display = "none";
+        $("ticket-block").style.display = "none";
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  // ---------- render sesi ----------
+  function renderSessions() {
+    const wrap = $("session-list");
+    wrap.innerHTML = "";
+    $("session-block").style.display = "block";
+    selectedDate.sessions.forEach((s) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "pick-btn session-btn" + (selectedSession === s ? " selected" : "");
+      btn.dataset.session = s.name;
+      btn.innerHTML = s.name + "<small>" + s.time + "</small>";
+      btn.addEventListener("click", () => {
+        selectedSession = s;
+        selectedMember = null;
+        renderSessions();
+        renderMembers();
+        $("ticket-block").style.display = "none";
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  // ---------- render member ----------
+  function renderMembers() {
+    const wrap = $("member-list");
+    wrap.innerHTML = "";
+    $("member-block").style.display = "block";
+    selectedSession.members.forEach((name) => {
+      const soldout = isSoldOut(name);
+      const card = document.createElement("div");
+      card.className =
+        "member-card" +
+        (selectedMember === name ? " selected" : "") +
+        (soldout ? " soldout" : "");
+      card.dataset.member = name;
+      card.innerHTML =
+        '<div class="m-name">' + name + "</div>" +
+        '<div class="m-line">&#128197; ' + selectedDate.date + "</div>" +
+        '<div class="m-line">&#9201;&#65039; ' + selectedSession.name + "</div>" +
+        (soldout ? '<span class="m-badge">&#9888; Sold Out</span>' : "");
+      if (!soldout) {
+        card.addEventListener("click", () => {
+          selectedMember = name;
+          renderMembers();
+          $("ticket-block").style.display = "block";
+          updateBuyButton();
+        });
+      }
+      wrap.appendChild(card);
+    });
+  }
+
+  // ---------- pembayaran + tombol beli ----------
+  function getPayment() {
+    const r = document.querySelector('input[name="payment"]:checked');
+    return r ? r.value : null;
+  }
+  function updateBuyButton() {
+    $("btn-beli-tiket").disabled = !(selectedMember && getPayment());
+  }
+  document.querySelectorAll('input[name="payment"]').forEach((r) =>
+    r.addEventListener("change", updateBuyButton)
+  );
+
+  $("btn-beli-tiket").addEventListener("click", () => {
+    if (!selectedDate || !selectedSession || !selectedMember || !getPayment()) return;
+    if (isSoldOut(selectedMember)) {
+      alert("Maaf, member ini sudah Sold Out!");
+      return;
+    }
+    const item = {
+      photobook: photobook.title,
+      member: selectedMember,
+      date: selectedDate.date,
+      session: selectedSession.name,
+      tickets: parseInt($("ticket-qty").value),
+      payment: getPayment() === "JKT48_POINT" ? "JKT48 Point" : "Bonus Point",
+      time: new Date().toLocaleTimeString("id-ID"),
+    };
+    addHistory(item);
+    renderHistory();
+
+    $("success-area").innerHTML =
+      '<div class="success-box">&#9989; <b>Pembelian Berhasil!</b><br>' +
+      item.member + " &middot; " + item.date + " &middot; " + item.session +
+      " &middot; " + item.tickets + " Tiket &middot; " + item.payment + "</div>";
+
+    // reset form biar transaksi berikutnya bisa jalan lagi
+    selectedDate = null;
+    selectedSession = null;
+    selectedMember = null;
+    $("ticket-qty").value = 1;
+    document.querySelectorAll('input[name="payment"]').forEach((r) => (r.checked = false));
+    renderDates();
+    $("session-block").style.display = "none";
+    $("member-block").style.display = "none";
+    $("ticket-block").style.display = "none";
+    updateBuyButton();
+  });
+
+  // ---------- riwayat ----------
+  function renderHistory() {
+    const wrap = $("history-list");
+    const h = getHistory();
+    if (!h.length) {
+      wrap.innerHTML = '<p style="font-size:13px;color:#999;">Belum ada pembelian.</p>';
+      return;
+    }
+    wrap.innerHTML = "";
+    h.slice().reverse().forEach((item, i) => {
+      const div = document.createElement("div");
+      div.className = "history-item";
+      div.innerHTML =
+        '<div class="h-name">' + (h.length - i) + ". " + item.member + "</div>" +
+        '<div class="h-meta">&#128197; ' + item.date +
+        " &nbsp;&#9201;&#65039; " + item.session +
+        " &nbsp;&#127915; " + item.tickets + " Tiket" +
+        " &nbsp;&#128179; " + item.payment +
+        " &nbsp;&#128337; " + item.time + "</div>";
+      wrap.appendChild(div);
+    });
+  }
+  $("btn-clear-history").addEventListener("click", () => {
+    clearHistory();
+    renderHistory();
+  });
+  renderHistory();
+
+  // ---------- panel sold out ----------
+  const togglesWrap = $("soldout-toggles");
+  ALL_MEMBERS.forEach((name) => {
+    const label = document.createElement("label");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = isSoldOut(name);
+    cb.addEventListener("change", () => {
+      setSoldOut(name, cb.checked);
+      if (selectedSession) renderMembers();
+    });
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(" " + name));
+    togglesWrap.appendChild(label);
+  });
+</script>
+
+</body>
+</html>

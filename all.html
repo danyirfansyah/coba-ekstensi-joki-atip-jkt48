@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Photobook | JKT48 Test Website</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/index.html" class="logo">JKT<b>48</b></a>
+  <span class="user"><span class="avatar">D</span> Halo, <b>Dany Irfansyah</b></span>
+</div>
+
+<div class="container">
+  <div style="display:flex;gap:40px;flex-wrap:wrap;align-items:flex-start;">
+
+    <div style="width:220px;flex-shrink:0;">
+      <div style="font-size:11px;color:#999;letter-spacing:1px;">JKT48 DIGITAL</div>
+      <h1 class="page-title" id="category-title">Digital<br>Photobook</h1>
+      <div class="breadcrumb">
+        <a href="/index.html">Home</a> &middot;
+        <a href="/what-are-exclusive">Apa Itu Eks...</a> &middot;
+        <span id="breadcrumb-current">Digital Photobook</span>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:400px;">
+      <div class="card-grid" id="item-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">Copyright &copy; 2026 JKT48 Test Site (Dummy) - hanya untuk testing ekstensi</div>
+
+<script src="/data.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const category = params.get("category") || "DIGITAL_PHOTOBOOK";
+
+  const titles = {
+    DIGITAL_PHOTOBOOK: "Digital<br>Photobook",
+    PHOTOCARD: "Photocard",
+    TWO_SHOT: "2-Shot",
+  };
+  const crumbs = {
+    DIGITAL_PHOTOBOOK: "Digital Photobook",
+    PHOTOCARD: "Photocard",
+    TWO_SHOT: "2-Shot",
+  };
+  document.getElementById("category-title").innerHTML = titles[category] || titles.DIGITAL_PHOTOBOOK;
+  document.getElementById("breadcrumb-current").textContent = crumbs[category] || crumbs.DIGITAL_PHOTOBOOK;
+  document.title = (crumbs[category] || "Digital Photobook") + " | JKT48 Test Website";
+
+  const grid = document.getElementById("item-grid");
+  PHOTOBOOKS.forEach((p) => {
+    const a = document.createElement("a");
+    a.className = "card photobook-card";
+    a.href = "/purchase.html?code=" + p.code;
+    a.dataset.code = p.code;
+    a.innerHTML =
+      '<div class="thumb">JKT48<small>OFFICIAL</small></div>' +
+      '<p class="card-title">' + p.title + "</p>";
+    grid.appendChild(a);
+  });
+</script>
+
+</body>
+</html>
