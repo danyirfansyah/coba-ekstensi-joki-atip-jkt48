@@ -11,6 +11,8 @@ const PORT = process.env.PORT || 5500;
 const ROUTES = {
   "/what-are-exclusive": "what-are-exclusive.html",
   "/what-are-exclusive/all": "all.html",
+  "/purchase/exclusive": "purchase.html",
+  "/purchase/success": "success.html",
 };
 
 const MIME = {

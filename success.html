@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pembelian Berhasil | JKT48 Test Website</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/index.html" class="logo">JKT<b>48</b></a>
+  <span class="user"><span class="avatar">D</span> Halo, <b>Dany Irfansyah</b></span>
+</div>
+
+<div class="container" style="max-width:520px;">
+  <div class="section" style="text-align:center;">
+    <div style="font-size:48px;margin-bottom:12px;">&#9989;</div>
+    <h2 style="margin-bottom:8px;">Pembelian Berhasil!</h2>
+    <div id="summary" style="font-size:13px;color:#555;margin-bottom:20px;"></div>
+    <a href="/what-are-exclusive/all?category=DIGITAL_PHOTOBOOK" style="color:#c40017;font-weight:600;font-size:13px;">&larr; Kembali</a>
+  </div>
+</div>
+
+<div class="footer">Copyright &copy; 2026 JKT48 Test Site (Dummy) - hanya untuk testing ekstensi</div>
+
+<script>
+  try {
+    const raw = sessionStorage.getItem("lastPurchase");
+    if (raw) {
+      const data = JSON.parse(raw);
+      document.getElementById("summary").innerHTML =
+        "<b>" + data.photobook + "</b><br>" +
+        data.items.map((i) => i.member + " &middot; " + i.session + " &middot; " + i.qty + " tiket").join("<br>");
+      sessionStorage.removeItem("lastPurchase");
+    }
+  } catch (e) {}
+</script>
+
+</body>
+</html>
