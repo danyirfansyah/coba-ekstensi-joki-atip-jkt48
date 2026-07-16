@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/what-are-exclusive", "destination": "/what-are-exclusive.html" },
+    { "source": "/what-are-exclusive/all", "destination": "/all.html" },
+    { "source": "/purchase/exclusive", "destination": "/purchase.html" },
+    { "source": "/purchase/success", "destination": "/success.html" }
+  ]
+}
