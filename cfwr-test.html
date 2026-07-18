@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CF Waiting Room Test | JKT48 Test Website</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/index.html" class="logo">JKT<b>48</b></a>
+  <span class="user"><span class="avatar">D</span> Halo, <b>Dany Irfansyah</b></span>
+</div>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <a href="/index.html">Home</a>
+    <a href="#">News</a>
+    <a href="#">Schedule</a>
+    <a href="#">Theater</a>
+    <a href="/what-are-exclusive">Apa itu Eksklusif</a>
+    <a href="/cfwr-test" class="active">CF Waiting Room (Test)</a>
+    <a href="#">Member</a>
+    <a href="#">Official Fan Club</a>
+    <a href="#">JKT48 Point</a>
+    <a href="#">Shop</a>
+  </nav>
+
+  <main class="content">
+    <h1 class="page-title" id="page-h1">CF Waiting Room Test</h1>
+    <div class="breadcrumb"><a href="/index.html">Home</a> &middot; CF Waiting Room (Test)</div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>Status Cookie</h2>
+      </div>
+      <p style="font-size:12px;color:#999;margin-bottom:6px;">
+        Nama cookie (samain persis dengan "Nama cookie aktif" di popup ekstensi kamu):
+      </p>
+      <input type="text" id="cookie-name-input" value="__cfwaitingroom"
+        style="width:100%;max-width:480px;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-family:monospace;font-size:13px;margin-bottom:12px;">
+      <p style="font-size:13px;color:#555;margin-bottom:12px;">
+        Nilai saat ini: <span class="badge" id="cookie-badge">(tidak ada)</span>
+      </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn secondary" id="btn-set-default" style="width:auto;padding:8px 16px;font-size:12px;">Set Default</button>
+        <button class="btn secondary" id="btn-set-custom" style="width:auto;padding:8px 16px;font-size:12px;">Set Custom</button>
+        <button class="btn secondary" id="btn-remove" style="width:auto;padding:8px 16px;font-size:12px;">Hapus</button>
+      </div>
+    </div>
+
+    <div class="section" id="hub-section">
+      <div class="section-head">
+        <h2>Halaman Simulasi</h2>
+      </div>
+      <p style="font-size:13px;color:#555;margin-bottom:12px;">
+        Ekstensi-mu (content-script) membaca <em>body text</em> halaman buat mutusin kapan
+        <code>setCfWaitingRoomCookie</code> / <code>sendCfCookieToServer</code> boleh jalan. Klik salah satu buat pindah mode:
+      </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a class="btn secondary" href="/cfwr" style="width:auto;padding:8px 16px;font-size:12px;">/cfwr</a>
+        <a class="btn secondary" href="/jkt48" style="width:auto;padding:8px 16px;font-size:12px;">/jkt48</a>
+        <a class="btn secondary" href="/both" style="width:auto;padding:8px 16px;font-size:12px;">/both</a>
+        <a class="btn secondary" href="/plain" style="width:auto;padding:8px 16px;font-size:12px;">/plain</a>
+        <a class="btn secondary" href="/simulate?cfwr=1&op=1" style="width:auto;padding:8px 16px;font-size:12px;">/simulate</a>
+      </div>
+      <ul style="margin-top:16px;font-size:13px;color:#555;line-height:1.9;padding-left:20px;">
+        <li><code>/cfwr</code> &mdash; mengandung frasa pemicu guard CFWR</li>
+        <li><code>/jkt48</code> &mdash; mengandung frasa pemicu guard Operation Team</li>
+        <li><code>/both</code> &mdash; mengandung keduanya</li>
+        <li><code>/plain</code> &mdash; tidak mengandung keduanya (guard harus menolak)</li>
+        <li><code>/simulate?cfwr=1&amp;op=1</code> &mdash; dinamis via query param</li>
+      </ul>
+      <p style="margin-top:10px;font-size:12px;color:#999;">
+        (Isi frasa persisnya sengaja nggak ditulis di sini biar nggak ikut kebaca ekstensi pas kamu buka halaman ini.)
+      </p>
+    </div>
+
+    <div class="section" id="mode-section" style="display:none;">
+      <div class="section-head">
+        <h2 id="mode-title"></h2>
+      </div>
+      <div id="mode-body" style="font-size:14px;color:#333;line-height:1.8;"></div>
+    </div>
+
+  </main>
+</div>
+
+<div class="footer">Copyright &copy; 2026 JKT48 Test Site (Dummy) - hanya untuk testing ekstensi</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : null;
+  }
+  function setCookie(name, value, days = 7) {
+    const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  }
+  function removeCookie(name) {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+  }
+
+  const nameInput = $('cookie-name-input');
+  nameInput.value = localStorage.getItem('cfwrTestCookieName') || '__cfwaitingroom';
+  nameInput.addEventListener('input', () => {
+    localStorage.setItem('cfwrTestCookieName', nameInput.value.trim());
+    renderCookieBadge();
+  });
+
+  function currentCookieName() {
+    return nameInput.value.trim() || '__cfwaitingroom';
+  }
+  function renderCookieBadge() {
+    const val = getCookie(currentCookieName());
+    const badge = $('cookie-badge');
+    badge.textContent = val || '(tidak ada)';
+  }
+  renderCookieBadge();
+
+  $('btn-set-default').addEventListener('click', () => {
+    setCookie(currentCookieName(), 'Chtest==');
+    renderCookieBadge();
+  });
+  $('btn-set-custom').addEventListener('click', () => {
+    const v = prompt('Masukkan nilai cookie (harus diawali "Ch"):', 'ChcustomValue==');
+    if (v) { setCookie(currentCookieName(), v); renderCookieBadge(); }
+  });
+  $('btn-remove').addEventListener('click', () => {
+    removeCookie(currentCookieName());
+    renderCookieBadge();
+  });
+
+  // ---------- mode rendering, based on path ----------
+  const path = location.pathname;
+  const params = new URLSearchParams(location.search);
+  const modeSection = $('mode-section');
+  const modeTitle = $('mode-title');
+  const modeBody = $('mode-body');
+
+  function showMode(title, html, h1) {
+    $('hub-section').style.display = 'none';
+    modeSection.style.display = 'block';
+    modeTitle.textContent = title;
+    modeBody.innerHTML = html;
+    if (h1) $('page-h1').textContent = h1;
+  }
+
+  if (path === '/cfwr') {
+    showMode('Waiting Room powered by Cloudflare', `
+      <p>Ini halaman simulasi Cloudflare Waiting Room.</p>
+      <p>Jika ekstensi-mu memanggil <code>setCfWaitingRoomCookie()</code>, guard seharusnya <b>mengizinkan</b>.</p>
+    `, 'CFWR Page (Only CFWR Text)');
+  } else if (path === '/jkt48') {
+    showMode('JKT48 Operation Team', `
+      <p>Ini halaman simulasi konten situs JKT48.</p>
+      <p>Jika ekstensi-mu memanggil <code>sendCfCookieToServer()</code>, guard seharusnya <b>mengizinkan</b>.</p>
+    `, 'JKT48 Page (Only Operation Team Text)');
+  } else if (path === '/both') {
+    showMode('Waiting Room powered by Cloudflare &amp; JKT48 Operation Team', `
+      <p>Keduanya hadir: set cookie &amp; kirim ke server seharusnya diperbolehkan.</p>
+    `, 'Both Page (CFWR + Operation Team)');
+  } else if (path === '/plain') {
+    showMode('Halaman Biasa', `
+      <p>Tidak ada frasa kunci. Kedua aksi di ekstensi seharusnya <b>diblok</b>.</p>
+    `, 'Plain Page (No Match)');
+  } else if (path === '/simulate') {
+    const showCfwr = params.get('cfwr') === '1';
+    const showOp = params.get('op') === '1';
+    let html = `<p>Halaman dinamis. Param: cfwr=${showCfwr}, op=${showOp}</p>`;
+    if (showCfwr) html += `<h3>Waiting Room powered by Cloudflare</h3>`;
+    if (showOp) html += `<h3>JKT48 Operation Team</h3>`;
+    html += `<p>Ubah parameter <code>?cfwr=1&amp;op=1</code> di URL buat nyala/matiin frasa.</p>`;
+    showMode('Simulate (Dynamic)', html, 'Simulate (Dynamic)');
+  }
+</script>
+
+</body>
+</html>

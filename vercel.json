@@ -6,6 +6,12 @@
     { "source": "/what-are-exclusive", "destination": "/what-are-exclusive.html" },
     { "source": "/what-are-exclusive/all", "destination": "/all.html" },
     { "source": "/purchase/exclusive", "destination": "/purchase.html" },
-    { "source": "/purchase/success", "destination": "/success.html" }
+    { "source": "/purchase/success", "destination": "/success.html" },
+    { "source": "/cfwr-test", "destination": "/cfwr-test.html" },
+    { "source": "/cfwr", "destination": "/waiting-room.html" },
+    { "source": "/jkt48", "destination": "/cfwr-test.html" },
+    { "source": "/both", "destination": "/cfwr-test.html" },
+    { "source": "/plain", "destination": "/cfwr-test.html" },
+    { "source": "/simulate", "destination": "/cfwr-test.html" }
   ]
 }

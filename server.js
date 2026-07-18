@@ -13,6 +13,12 @@ const ROUTES = {
   "/what-are-exclusive/all": "all.html",
   "/purchase/exclusive": "purchase.html",
   "/purchase/success": "success.html",
+  "/cfwr-test": "cfwr-test.html",
+  "/cfwr": "waiting-room.html",
+  "/jkt48": "cfwr-test.html",
+  "/both": "cfwr-test.html",
+  "/plain": "cfwr-test.html",
+  "/simulate": "cfwr-test.html",
 };
 
 const MIME = {

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Just a moment...</title>
+<script>
+  // Meniru Cloudflare: kalau cookie waiting-room valid udah ada, langsung loloskan
+  // (dipanggil sebelum body dirender biar nggak sempat keliatan flash Waiting Room)
+  (function () {
+    const cookieName = localStorage.getItem('cfwrTestCookieName') || '__cfwaitingroom';
+    const match = document.cookie.match(new RegExp('(?:^|; )' + cookieName + '=([^;]*)'));
+    const value = match ? decodeURIComponent(match[1]) : null;
+    if (value && value.startsWith('Ch')) {
+      location.replace('/what-are-exclusive/all?category=DIGITAL_PHOTOBOOK');
+    }
+  })();
+</script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    color: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .wr-main {
+    flex: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 24px 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+  @media (max-width: 640px) {
+    .wr-main { grid-template-columns: 1fr; padding-top: 40px; }
+  }
+  .wr-main h1 {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+  .wr-right p.lead {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .wr-right p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #222;
+    margin-bottom: 16px;
+  }
+  .wr-right p.bold {
+    font-weight: 700;
+  }
+  .wr-footer {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 12px;
+  }
+  .wr-footer .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+  }
+  .wr-footer .brand svg { display: block; }
+  .wr-footer .links a {
+    color: #ccc;
+    text-decoration: none;
+    margin-left: 14px;
+  }
+  .wr-footer .links a:hover { color: #fff; }
+</style>
+</head>
+<body>
+
+<main class="wr-main">
+  <div class="wr-left">
+    <h1>Anda sekarang berada dalam antrian.<br><br>Terima kasih telah menunggu.</h1>
+  </div>
+  <div class="wr-right">
+    <p class="lead">Perkiraan waktu tunggu Anda tidak diketahui.</p>
+    <p>Berhubung banyaknya permintaan ke situs kami, kami menggunakan antrian virtual untuk membatasi jumlah pengguna situs web pada waktu bersamaan. Ini kami terapkan untuk memastikan Anda mendapatkan pengalaman daring yang terbaik.</p>
+    <p class="bold">Laman ini akan otomatis dimuat ulang, mohon jangan tutup browser Anda.</p>
+    <p class="bold">Terakhir diperbarui <span id="wr-time"></span></p>
+  </div>
+</main>
+
+<div class="wr-footer">
+  <div class="brand">
+    <svg width="20" height="14" viewBox="0 0 40 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M32 18c3.3 0 6-2.7 6-6s-2.7-6-6-6c-.4 0-.8 0-1.2.1C29.6 3 26.1 0 22 0c-4.4 0-8.1 3-9.1 7.1C12.3 7 11.6 7 11 7 6 7 2 11 2 16c0 .7.1 1.4.2 2" stroke="#f6821f" stroke-width="2.2" fill="none"/>
+      <ellipse cx="16" cy="21" rx="14" ry="6" fill="#f6821f"/>
+    </svg>
+    CLOUDFLARE
+    <span style="font-weight:400;color:#bbb;margin-left:4px;">Waiting Room didukung oleh Cloudflare</span>
+  </div>
+  <div class="links">
+    &copy; 2026 Cloudflare, Inc.
+    <a href="#">Kebijakan Privasi</a>
+    <a href="#">Syarat Penggunaan</a>
+    <a href="#">Terpercaya &amp; Aman</a>
+  </div>
+</div>
+
+<script>
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function renderTime() {
+    const d = new Date();
+    document.getElementById('wr-time').textContent = `${pad(d.getHours())}.${pad(d.getMinutes())}.${pad(d.getSeconds())}`;
+  }
+  renderTime();
+  setInterval(renderTime, 1000);
+</script>
+
+</body>
+</html>
