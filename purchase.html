@@ -92,7 +92,11 @@
           <div id="timetable" style="overflow-x:auto;"></div>
         </div>
 
-        <div id="session-block" style="display:none;">
+        <div id="session-block" class="mt-4" style="display:none;">
+          <!-- label tanggal ini HARUS jadi <p class="font-bold"> pertama di dalam container,
+               soalnya DOM Radar bot (content.js) nyari container via .closest('.mt-4') lalu
+               ambil querySelector('p.font-bold') PERTAMA buat validasi tanggal per-kolom sesi. -->
+          <p class="font-bold" id="session-date-label" style="font-size:13px;color:#555;margin-bottom:10px;"></p>
           <h4 style="font-size:15px;margin-bottom:14px;">&#127916; Pilih Sesi &amp; Member Bonus Video Call</h4>
           <div class="grid" id="session-tabs" style="display:flex;gap:8px;margin-bottom:16px;"></div>
           <div id="session-columns"></div>
@@ -205,10 +209,11 @@
     $("date-combobox").textContent = d.label;
     $("date-combobox").setAttribute("aria-expanded", "false");
     $("date-popover").style.display = "none";
+    $("session-date-label").textContent = d.label;
     currentSessionIndex = 0;
     $("session-block").style.display = "block";
     renderSessionTabs();
-    renderSessionColumn();
+    renderSessionColumns();
   }
 
   $("date-combobox").addEventListener("click", () => {
@@ -222,12 +227,16 @@
   });
   $("date-search").addEventListener("input", () => renderDateOptions($("date-search").value));
 
+  // Tab & kolom sesi dirender SEKALIGUS buat semua sesi di tanggal terpilih (bukan gantian),
+  // soalnya bot (DOM Radar di content.js) butuh nge-scan ".group/session" multi-kolom
+  // buat dukung target session "Bebas" (bebas_awal/bebas_akhir cari lintas sesi 1-8).
   function renderSessionTabs() {
     const wrap = $("session-tabs");
     wrap.innerHTML = "";
     selectedDateObj.sessions.forEach((s, i) => {
       const tab = document.createElement("div");
       tab.textContent = s.name;
+      tab.dataset.sessionIndex = i;
       tab.className = i === currentSessionIndex ? "bg-primary text-white" : "";
       tab.style.cssText =
         "padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;" +
@@ -235,72 +244,77 @@
       tab.addEventListener("click", () => {
         currentSessionIndex = i;
         renderSessionTabs();
-        renderSessionColumn();
+        const col = document.querySelector(`.group\\/session[data-session-index="${i}"]`);
+        if (col) col.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
       });
       wrap.appendChild(tab);
     });
   }
 
-  function renderSessionColumn() {
+  function renderSessionColumns() {
     const wrap = $("session-columns");
     wrap.innerHTML = "";
-    const s = selectedDateObj.sessions[currentSessionIndex];
+    wrap.style.cssText = "display:flex;gap:20px;overflow-x:auto;padding-bottom:8px;";
 
-    const col = document.createElement("div");
-    col.className = "group/session";
+    selectedDateObj.sessions.forEach((s, sIdx) => {
+      const col = document.createElement("div");
+      col.className = "group/session";
+      col.dataset.sessionIndex = sIdx;
+      col.style.cssText = "flex:0 0 200px;";
 
-    const header = document.createElement("div");
-    header.className = "font-bold pb-2";
-    header.style.cssText = "font-size:13px;margin-bottom:8px;color:#555;";
-    const span = document.createElement("span");
-    span.textContent = s.name;
-    header.appendChild(span);
-    col.appendChild(header);
+      const header = document.createElement("div");
+      header.className = "font-bold pb-2";
+      header.style.cssText = "font-size:13px;margin-bottom:8px;color:#555;";
+      const span = document.createElement("span");
+      span.textContent = s.name;
+      header.appendChild(span);
+      col.appendChild(header);
 
-    s.members.forEach((name) => {
-      const soldout = isSoldOut(name);
-      const already = bonusCart.find((c) => c.member === name && c.session === s.name);
+      s.members.forEach((name) => {
+        const soldout = isSoldOut(name);
+        const already = bonusCart.find((c) => c.member === name && c.session === s.name);
 
-      const label = document.createElement("label");
-      label.className = "py-2 border-b";
-      label.style.cssText =
-        "display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;gap:10px;";
+        const label = document.createElement("label");
+        label.className = "py-2 border-b";
+        label.style.cssText =
+          "display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;gap:10px;";
 
-      const nameEl = document.createElement("p");
-      nameEl.className = "font-bold";
-      nameEl.style.cssText = "font-size:13px;margin:0;";
-      nameEl.textContent = name;
-      label.appendChild(nameEl);
+        const nameEl = document.createElement("p");
+        nameEl.className = "font-bold";
+        nameEl.style.cssText = "font-size:13px;margin:0;";
+        nameEl.textContent = name;
+        label.appendChild(nameEl);
 
-      if (soldout) {
-        const badge = document.createElement("span");
-        badge.textContent = "Sold Out";
-        badge.style.cssText = "font-size:11px;color:#c40017;font-weight:700;";
-        label.appendChild(badge);
-      }
+        if (soldout) {
+          const badge = document.createElement("span");
+          badge.textContent = "Sold Out";
+          badge.style.cssText = "font-size:11px;color:#c40017;font-weight:700;";
+          label.appendChild(badge);
+        }
 
-      const input = document.createElement("input");
-      input.type = "number";
-      input.dataset.slot = "input";
-      input.min = "0";
-      input.max = "5";
-      input.value = already ? String(already.qty) : "0";
-      input.setAttribute("aria-valuemax", soldout ? "0" : "5");
-      input.disabled = soldout;
-      input.style.cssText = "width:56px;text-align:center;border:1px solid #ddd;border-radius:5px;padding:4px;";
+        const input = document.createElement("input");
+        input.type = "number";
+        input.dataset.slot = "input";
+        input.min = "0";
+        input.max = "5";
+        input.value = already ? String(already.qty) : "0";
+        input.setAttribute("aria-valuemax", soldout ? "0" : "5");
+        input.disabled = soldout;
+        input.style.cssText = "width:56px;text-align:center;border:1px solid #ddd;border-radius:5px;padding:4px;";
 
-      input.addEventListener("change", () => {
-        const qty = parseInt(input.value) || 0;
-        bonusCart = bonusCart.filter((c) => !(c.member === name && c.session === s.name));
-        if (qty > 0) bonusCart.push({ member: name, session: s.name, qty });
-        $("btn-submit-bonus").style.display = bonusCart.length > 0 ? "block" : "none";
+        input.addEventListener("change", () => {
+          const qty = parseInt(input.value) || 0;
+          bonusCart = bonusCart.filter((c) => !(c.member === name && c.session === s.name));
+          if (qty > 0) bonusCart.push({ member: name, session: s.name, qty });
+          $("btn-submit-bonus").style.display = bonusCart.length > 0 ? "block" : "none";
+        });
+
+        label.appendChild(input);
+        col.appendChild(label);
       });
 
-      label.appendChild(input);
-      col.appendChild(label);
+      wrap.appendChild(col);
     });
-
-    wrap.appendChild(col);
   }
 
   $("btn-beli-photobook").addEventListener("click", () => {
@@ -309,11 +323,12 @@
     $("page-h1").textContent = "Bonus Video Call - Digital Photobook";
     selectedDateObj = SCHEDULE[0];
     $("date-combobox").textContent = "-- Pilih Tanggal --";
+    $("session-date-label").textContent = SCHEDULE[0].label;
     currentSessionIndex = 0;
     bonusCart = [];
     $("session-block").style.display = "block";
     renderSessionTabs();
-    renderSessionColumn();
+    renderSessionColumns();
   });
 
   // ================= STAGE 3: KONFIRMASI PEMBELIAN =================
@@ -443,7 +458,7 @@
     cb.checked = isSoldOut(name);
     cb.addEventListener("change", () => {
       setSoldOut(name, cb.checked);
-      if ($("stage-bonus").style.display !== "none") renderSessionColumn();
+      if ($("stage-bonus").style.display !== "none") renderSessionColumns();
       renderTimetable();
     });
     label.appendChild(cb);
